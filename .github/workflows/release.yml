@@ -19,14 +19,16 @@ jobs:
       matrix:
         include:
           # macOS Universal (Intel + Apple Silicon in one DMG)
-          - os: macos-14
+          - os: macos-13
             name: macOS-Universal
             script: dist:mac:universal
+            arch_flag: '--universal'
 
           # macOS Apple Silicon only
           - os: macos-14
             name: macOS-Silicon
             script: dist:mac:arm64
+            arch_flag: '--arm64'
 
           # Windows x64
           - os: windows-latest
@@ -54,9 +56,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build – ${{ matrix.name }}
         run: npm run ${{ matrix.script }}

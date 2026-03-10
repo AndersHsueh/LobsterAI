@@ -180,7 +180,7 @@ export interface AppConfig {
         supportsImage?: boolean;
       }>;
     };
-    custom: {
+    lmstudio: {
       enabled: boolean;
       apiKey: string;
       baseUrl: string;
@@ -391,12 +391,14 @@ export const defaultConfig: AppConfig = {
         { id: 'glm-4.7-flash', name: 'GLM 4.7 Flash', supportsImage: false }
       ]
     },
-    custom: {
+    lmstudio: {
       enabled: false,
       apiKey: '',
-      baseUrl: '',
+      baseUrl: 'http://127.0.0.1:1234/v1',
       apiFormat: 'openai',
-      models: []
+      models: [
+        { id: 'local-model', name: 'Local Model', supportsImage: false }
+      ]
     }
   },
   theme: 'system',
@@ -424,7 +426,7 @@ export const CONFIG_KEYS = {
 };
 
 // 模型提供商分类
-export const CHINA_PROVIDERS = ['deepseek', 'moonshot', 'qwen', 'zhipu', 'minimax', 'volcengine', 'youdaozhiyun', 'stepfun', 'xiaomi', 'ollama', 'custom'] as const;
+export const CHINA_PROVIDERS = ['deepseek', 'moonshot', 'qwen', 'zhipu', 'minimax', 'ollama', 'lmstudio'] as const;
 export const GLOBAL_PROVIDERS = ['openai', 'gemini', 'anthropic', 'openrouter'] as const;
 export const EN_PRIORITY_PROVIDERS = ['openai', 'anthropic', 'gemini'] as const;
 
@@ -448,8 +450,8 @@ export const getVisibleProviders = (language: 'zh' | 'en'): readonly string[] =>
     ...GLOBAL_PROVIDERS,
   ];
   const uniqueProviders = [...new Set(orderedProviders)];
-  // Move ollama and custom to the end, with custom last
-  for (const key of ['ollama', 'custom'] as const) {
+  // Move ollama and lmstudio to the end, with lmstudio last
+  for (const key of ['ollama', 'lmstudio'] as const) {
     const idx = uniqueProviders.indexOf(key);
     if (idx !== -1) {
       uniqueProviders.splice(idx, 1);

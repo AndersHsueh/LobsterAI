@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, session, nativeTheme, dialog, shell, nativeImage, systemPreferences, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, session, nativeTheme, dialog, shell, nativeImage, Menu } from 'electron';
 import type { WebContents } from 'electron';
 import path from 'path';
 import fs from 'fs';
@@ -1328,12 +1328,13 @@ if (!gotTheLock) {
     imageAttachments?: Array<{ name: string; mimeType: string; base64Data: string }>;
   }) => {
     try {
-      console.log('[main] cowork:session:continue handler', {
-        sessionId: options.sessionId,
-        hasImageAttachments: !!options.imageAttachments,
-        imageAttachmentsCount: options.imageAttachments?.length ?? 0,
-        imageAttachmentsNames: options.imageAttachments?.map(a => a.name),
-      });
+      // Temp session IDs only exist in the renderer (Redux), never in the main process store.
+      // If the renderer sends a continue request with a stale temp ID (e.g. during HMR restart),
+      // silently discard it to avoid noisy "Session not found" errors.
+      if (options.sessionId.startsWith('temp-')) {
+        return { success: false, error: 'Temporary session ID is not valid for continuation' };
+      }
+
       const runner = getCoworkRunner();
       runner.continueSession(options.sessionId, options.prompt, {
         systemPrompt: options.systemPrompt,

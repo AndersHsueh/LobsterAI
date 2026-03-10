@@ -440,7 +440,11 @@ function getWindowsGitToolDirs(bashPath: string): string[] {
   return candidates.filter((dir) => existsSync(dir));
 }
 
-function ensureElectronNodeShim(electronPath: string, npmBinDir?: string): string | null {
+function ensureWindowsElectronNodeShim(electronPath: string, npmBinDir?: string): string | null {
+  if (process.platform !== 'win32') {
+    return null;
+  }
+
   try {
     const shimDir = join(app.getPath('userData'), 'cowork', 'bin');
     mkdirSync(shimDir, { recursive: true });
@@ -1153,7 +1157,7 @@ function applyPackagedEnvOverrides(env: Record<string, string | undefined>): voi
   const hasSystemNpm = hasCommandInEnv('npm', env);
   const shouldInjectShim = process.platform === 'win32' || !(hasSystemNode && hasSystemNpx && hasSystemNpm);
   if (shouldInjectShim) {
-    const shimDir = ensureElectronNodeShim(electronNodeRuntimePath, npmBinDir);
+    const shimDir = ensureWindowsElectronNodeShim(electronNodeRuntimePath, npmBinDir);
     if (shimDir) {
       env.PATH = [shimDir, env.PATH].filter(Boolean).join(delimiter);
       env.LOBSTERAI_NODE_SHIM_ACTIVE = '1';
