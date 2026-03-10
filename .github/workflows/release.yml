@@ -9,6 +9,9 @@ on:
         description: 'Release tag to upload artifacts to (e.g. AX-FINETURN-V0.0.1)'
         required: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     strategy:
@@ -16,16 +19,14 @@ jobs:
       matrix:
         include:
           # macOS Universal (Intel + Apple Silicon in one DMG)
-          - os: macos-13
+          - os: macos-14
             name: macOS-Universal
             script: dist:mac:universal
-            arch_flag: '--universal'
 
           # macOS Apple Silicon only
           - os: macos-14
             name: macOS-Silicon
             script: dist:mac:arm64
-            arch_flag: '--arm64'
 
           # Windows x64
           - os: windows-latest
@@ -53,10 +54,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build – ${{ matrix.name }}
         run: npm run ${{ matrix.script }}
