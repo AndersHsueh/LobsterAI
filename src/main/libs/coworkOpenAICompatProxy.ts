@@ -893,6 +893,19 @@ async function handleRequest(
     return;
   }
 
+  // Handle count_tokens: estimate based on body length (approx 4 chars per token)
+  if (method === 'POST' && url.pathname === '/v1/messages/count_tokens') {
+    let bodyRaw = '';
+    try {
+      bodyRaw = await readRequestBody(req);
+    } catch {
+      // ignore body read errors
+    }
+    const estimatedTokens = Math.max(1, Math.ceil(bodyRaw.length / 4));
+    writeJSON(res, 200, { input_tokens: estimatedTokens });
+    return;
+  }
+
   if (method !== 'POST' || url.pathname !== '/v1/messages') {
     writeJSON(res, 404, createAnthropicErrorBody('Not found', 'not_found_error'));
     return;
