@@ -30,21 +30,10 @@ import IMSettings from './im/IMSettings';
 import EmailSkillConfig from './skills/EmailSkillConfig';
 import { defaultConfig, type AppConfig, getVisibleProviders } from '../config';
 import {
-  OpenAIIcon,
-  DeepSeekIcon,
-  GeminiIcon,
-  AnthropicIcon,
-  MoonshotIcon,
-  ZhipuIcon,
-  MiniMaxIcon,
   YouDaoZhiYunIcon,
-  QwenIcon,
   XiaomiIcon,
   StepfunIcon,
   VolcengineIcon,
-  OpenRouterIcon,
-  OllamaIcon,
-  CustomProviderIcon,
 } from './icons/providers';
 
 type TabType = 'general' | 'model' | 'coworkSandbox' | 'coworkMemory' | 'shortcuts' | 'im' | 'email' | 'about';
@@ -196,6 +185,22 @@ const providerMeta: Record<ProviderType, { label: string; icon: React.ReactNode 
     icon: (
       <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" style={{flex: '0 0 auto', lineHeight: 1}}><title>LM Studio</title><path d="M12 2L3 7v10l9 5 9-5V7L12 2zm0 2.18l6.36 3.54-2.12 1.18L12 6.54 8.76 8.9 6.64 7.72 12 4.18zM5 8.72l2 1.11V13l-2-1.11V8.72zm14 0V11.9L17 13v-3.17l2-1.11zM11 9.67l2-1.11 2 1.11V12.9l-2 1.1-2-1.1V9.67zM5 14.06l2 1.11v1.11L5 15.17v-1.11zm14 0v1.11l-2 1.11v-1.11l2-1.11zM11 15.05l2 1.11v1.11l-2-1.1v-1.12zm2 1.11l2-1.11v1.12l-2 1.1v-1.11z"/></svg>
     ),
+  },
+  youdaozhiyun: {
+    label: 'YouDao ZhiYun',
+    icon: <YouDaoZhiYunIcon />,
+  },
+  volcengine: {
+    label: 'Volcengine',
+    icon: <VolcengineIcon />,
+  },
+  xiaomi: {
+    label: 'Xiaomi',
+    icon: <XiaomiIcon />,
+  },
+  stepfun: {
+    label: 'Stepfun',
+    icon: <StepfunIcon />,
   },
 };
 
@@ -2534,20 +2539,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice, onUpda
                     </div>
                   )}
                 </div>
-                {activeProvider === 'custom' && (
-                <div className="mt-1.5 space-y-0.5 text-[11px] text-claude-secondaryText dark:text-claude-darkSecondaryText">
-                  <p>
-                    <span className="text-sm text-claude-accent/50 mr-1">•</span>
-                    {i18nService.t('baseUrlHint1')}
-                    <code className="ml-1 text-claude-accent/80 dark:text-claude-accent/70 break-all">{i18nService.t('baseUrlHintExample1')}</code>
-                  </p>
-                  <p>
-                    <span className="text-sm text-claude-accent/50 mr-1">•</span>
-                    {i18nService.t('baseUrlHint2')}
-                    <code className="ml-1 text-claude-accent/80 dark:text-claude-accent/70 break-all">{i18nService.t('baseUrlHintExample2')}</code>
-                  </p>
-                </div>
-                )}
                 {/* GLM Coding Plan 提示 */}
                 {activeProvider === 'zhipu' && providers.zhipu.codingPlanEnabled && (
                   <div className="mt-1.5 p-2 rounded-lg bg-claude-accent/10 border border-claude-accent/20">
