@@ -1,0 +1,81 @@
+name: Build and Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to upload artifacts to (e.g. AX-FINETURN-V0.0.1)'
+        required: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS Universal (Intel + Apple Silicon in one DMG)
+          - os: macos-13
+            name: macOS-Universal
+            script: dist:mac:universal
+            arch_flag: '--universal'
+
+          # macOS Apple Silicon only
+          - os: macos-14
+            name: macOS-Silicon
+            script: dist:mac:arm64
+            arch_flag: '--arm64'
+
+          # Windows x64
+          - os: windows-latest
+            name: Windows-x64
+            script: dist:win
+
+          # Linux x64
+          - os: ubuntu-latest
+            name: Linux-x64
+            script: dist:linux
+
+          # Linux ARM64
+          - os: ubuntu-24.04-arm
+            name: Linux-ARM64
+            script: dist:linux
+
+    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build – ${{ matrix.name }}
+        run: npm run ${{ matrix.script }}
+        env:
+          # Skip macOS code signing in CI (no Apple Developer credentials)
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List release output
+        shell: bash
+        run: ls -lh release/ | grep -E '\.(dmg|exe|AppImage)' || true
+
+      - name: Upload artifacts to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name || inputs.tag }}
+          files: |
+            release/*.dmg
+            release/*.exe
+            release/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
