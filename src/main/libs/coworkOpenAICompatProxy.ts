@@ -831,6 +831,13 @@ async function handleStreamResponse(
 
   const flushDone = () => {
     if (!state.hasMessageStart) {
+      // LM Studio returned no SSE content at all (empty stream, connection timeout,
+      // or non-SSE response body). Emit an error event so the SDK gets a descriptive
+      // message instead of the opaque "No assistant message found".
+      const upstreamError = lastProxyError
+        ? `Upstream returned no content: ${lastProxyError}`
+        : 'Upstream returned no content. Check that LM Studio is running and the model is loaded.';
+      emitSSE(res, 'error', createAnthropicErrorBody(upstreamError, 'stream_error'));
       return;
     }
     // Flush any partial tag buffer that wasn't completed before the stream ended.
@@ -1037,6 +1044,16 @@ async function handleRequest(
     }
     const estimatedTokens = Math.max(1, Math.ceil(bodyRaw.length / 4));
     writeJSON(res, 200, { input_tokens: estimatedTokens });
+    return;
+  }
+
+  // Silently accept Anthropic SDK telemetry / 1P event logging endpoints.
+  // The SDK tries to POST analytics to /v1/events (and similar paths). Our proxy
+  // is not the real Anthropic backend, so returning 200 here prevents the SDK
+  // from logging "26 events failed to export" noise and marking sessions as errors.
+  if (method === 'POST' && (url.pathname === '/v1/events' || url.pathname.startsWith('/v1/telemetry'))) {
+    try { await readRequestBody(req); } catch { /* ignore */ }
+    writeJSON(res, 200, {});
     return;
   }
 
